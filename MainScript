@@ -208,3 +208,36 @@ local Button = TeleportTab:CreateButton({
         end
     end,
 })
+
+local Button = TeleportTab:CreateButton({
+    Name = "Teleport to MM2 Gun",  -- Name of the button
+    Flag = "TeleportToMM2GunButton",  -- Unique flag for saving/loading the state
+    
+    -- Callback function that is triggered when the button is clicked
+    Callback = function()
+        print("Teleporting to MM2 Gun...")
+
+        local gunFound = false
+        -- Loop through all players and check if they have the Gun in their Backpack
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer and player.Character then
+                -- Check if the player has the Gun in their Backpack
+                if player.Backpack:FindFirstChild("Gun") then
+                    print("Gun found with player: " .. player.Name)
+                    -- Teleport the player to the Gun
+                    local gun = player.Backpack:FindFirstChild("Gun")
+                    if gun then
+                        -- You can teleport to the position of the gun or other specifics
+                        game.Players.LocalPlayer.Character:MoveTo(gun.Position)
+                        gunFound = true
+                        break  -- Stop the loop once the Gun is found
+                    end
+                end
+            end
+        end
+        
+        if not gunFound then
+            print("No Gun found in player's Backpack.")
+        end
+    end,
+})
