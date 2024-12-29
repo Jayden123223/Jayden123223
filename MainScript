@@ -1,1 +1,210 @@
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/Jayden123223/Jayden123223/refs/heads/main/MainUI'))()
 
+local Window = Rayfield:CreateWindow({
+    Name = "Murder Mystery 2 Script",
+    LoadingTitle = "Murder Mystery 2",
+    LoadingSubtitle = "By SxmlyMoe",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = nil, -- Optional: Specify a folder name for saved settings
+        FileName = "Big Hub" -- The name of the file to save configuration settings
+    },
+    KeySystem = false, -- Disable the key system
+    KeySettings = {
+        Title = "Murder Mystery 2 | Key",
+        Subtitle = "On my Roblox Profile",
+        FileName = "Key",
+        SaveKey = false,
+        GrabKeyFromSite = false,
+        Key = "Moe"
+    }
+})
+
+-- Creating a new tab and section
+local MainTab = Window:CreateTab("Home", nil) -- Title, Image (set to nil for no image)
+local ESPTab = Window:CreateTab("ESP", nil) -- New tab for ESP features
+local PlayerTab = Window:CreateTab("Player", nil) -- New tab for Player features
+local TeleportTab = Window:CreateTab("Teleport",nil) -- New tab for Teleport features
+
+-- Adding sections to tabs
+local MainSection = MainTab:CreateSection("Main")
+local ESPSection = ESPTab:CreateSection("ESP Features - Turn On/Off Every Round!")
+local PlayerSection = PlayerTab:CreateSection("Player Features ")
+local TeleportSection = TeleportTab:CreateSection("Teleport Features ")
+
+-- Murderer ESP TAB
+local MurdererESPToggle = ESPTab:CreateToggle({
+    Name = "Murderer ESP", -- Name of the toggle
+    CurrentValue = false, -- Default value
+    Flag = "EnableMurdererESP", -- Flag for saving the toggle state
+    Callback = function(state)
+        if state then
+            print("Murderer ESP Enabled!")
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if player ~= game.Players.LocalPlayer and player.Backpack:FindFirstChild("Knife") then
+                    if not player.Character:FindFirstChild("MurdererHighlight") then
+                        local highlight = Instance.new("Highlight")
+                        highlight.Name = "MurdererHighlight"
+                        highlight.Adornee = player.Character
+                        highlight.Parent = player.Character
+                        highlight.FillColor = Color3.new(1, 0, 0) -- Red for Murderer
+                    end
+                end
+            end
+        else
+            print("Murderer ESP Disabled!")
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if player.Character and player.Character:FindFirstChild("MurdererHighlight") then
+                    player.Character.MurdererHighlight:Destroy()
+                end
+            end
+        end
+    end
+})
+
+-- Sheriff ESP TAB
+local SheriffESPToggle = ESPTab:CreateToggle({
+    Name = "Sheriff ESP", -- Name of the toggle
+    CurrentValue = false, -- Default value
+    Flag = "EnableSheriffESP", -- Flag for saving the toggle state
+    Callback = function(state)
+        if state then
+            print("Sheriff ESP Enabled!")
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if player ~= game.Players.LocalPlayer and player.Backpack:FindFirstChild("Gun") then
+                    if not player.Character:FindFirstChild("SheriffHighlight") then
+                        local highlight = Instance.new("Highlight")
+                        highlight.Name = "SheriffHighlight"
+                        highlight.Adornee = player.Character
+                        highlight.Parent = player.Character
+                        highlight.FillColor = Color3.new(0, 0, 1) -- Blue for Sheriff
+                    end
+                end
+            end
+        else
+            print("Sheriff ESP Disabled!")
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if player.Character and player.Character:FindFirstChild("SheriffHighlight") then
+                    player.Character.SheriffHighlight:Destroy()
+                end
+            end
+        end
+    end
+})
+
+-- Innocent ESP TAB
+local InnocentESPToggle = ESPTab:CreateToggle({
+    Name = "Innocent ESP", -- Name of the toggle
+    CurrentValue = false, -- Default value
+    Flag = "EnableInnocentESP", -- Flag for saving the toggle state
+    Callback = function(state)
+        if state then
+            print("Innocent ESP Enabled!")
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if player ~= game.Players.LocalPlayer and not player.Backpack:FindFirstChild("Knife") and not player.Backpack:FindFirstChild("Gun") then
+                    if not player.Character:FindFirstChild("InnocentHighlight") then
+                        local highlight = Instance.new("Highlight")
+                        highlight.Name = "InnocentHighlight"
+                        highlight.Adornee = player.Character
+                        highlight.Parent = player.Character
+                        highlight.FillColor = Color3.new(0, 1, 0) -- Green for Innocent
+                    end
+                end
+            end
+        else
+            print("Innocent ESP Disabled!")
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if player.Character and player.Character:FindFirstChild("InnocentHighlight") then
+                    player.Character.InnocentHighlight:Destroy()
+                end
+            end
+        end
+    end
+})
+
+-- PLAYER TAB
+PlayerTab:CreateSlider({
+    Name = "Walkspeed Slider",  -- The name of the slider
+    Range = {0, 25},           -- The min and max values (0 to 300)
+    Increment = 1,              -- The step size when adjusting the slider
+    Suffix = "Speed",           -- Suffix to display after the value (e.g., "Speed")
+    CurrentValue = 16,         -- The initial value of the slider (161 in this case)
+    Flag = "Slider1",           -- A unique flag identifier for this setting (important for saving/loading config)
+    
+    -- Callback function that gets called whenever the slider value changes
+    Callback = function(Value)
+        -- Set the player's WalkSpeed to the new value from the slider
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+        print("WalkSpeed set to: " .. Value)  -- Optional: prints the new WalkSpeed for feedback
+    end,
+})
+
+PlayerTab:CreateSlider({
+    Name = "Jump Height Slider                        (NOT WORKING)",  -- The name of the slider
+    Range = {0, 25},              -- The min and max values (0 to 25)
+    Increment = 1,                -- The step size when adjusting the slider
+    Suffix = "Jump",              -- Suffix to display after the value (e.g., "Jump")
+    CurrentValue = 25,            -- The initial value of the slider (16 in this case)
+    Flag = "Slider2",             -- A unique flag identifier for this setting
+    
+    -- Callback function that gets called whenever the slider value changes
+    Callback = function(Value)
+        -- Set the player's JumpHeight to the new value from the slider
+        game.Players.LocalPlayer.Character.Humanoid.JumpHeight = Value
+        print("JumpHeight set to: " .. Value)  -- Optional: prints the new JumpHeight for feedback
+    end,
+})
+
+-- TELEPORT TAB
+local Dropdown = TeleportTab:CreateDropdown({
+    Name = "Select Area                                                           (NOT WORKING)",  -- Name of the dropdown
+    Options = {"Spawn", "Map"},  -- Options in the dropdown
+    CurrentOption = "Spawn",  -- Default selected option (fixed from 'Starter Island')
+    MultipleOptions = false,  -- Set to false if only one option can be selected at a time
+    Flag = "Dropdown1",  -- A unique flag for saving/loading config
+    
+    -- Callback function that is triggered when the selected option changes
+    Callback = function(Option)
+        -- Option is a string that contains the selected option
+        print("Selected Area: " .. Option)
+        if Option == "Spawn" then
+            -- Add code here to teleport to the spawn area
+            print("Teleporting to Spawn...")
+            -- Example: game.Players.LocalPlayer.Character:MoveTo(workspace.Spawn)
+        elseif Option == "Map" then
+            -- Add code here to teleport to the map area
+            print("Teleporting to Map...")
+            -- Example: game.Players.LocalPlayer.Character:MoveTo(workspace.Map)
+        end
+    end,
+})
+
+-- Creating a button for teleporting to "Murder" area in MM2
+local Button = TeleportTab:CreateButton({
+    Name = "Teleport to Murder",  -- Name of the button
+    Flag = "TeleportToMurderButton",  -- Unique flag for saving/loading the state
+    
+    -- Callback function that is triggered when the button is clicked
+    Callback = function()
+        print("Teleporting to Murder...")
+
+        local murdererFound = false
+        -- Loop through all players and check if they have a Knife in their Backpack
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player ~= game.Players.LocalPlayer and player.Character then
+                -- Check if the player is the Murderer (has a Knife in their Backpack)
+                if player.Backpack:FindFirstChild("Knife") then
+                    print("Murderer found: " .. player.Name)
+                    -- Teleport the player to the Murderer
+                    game.Players.LocalPlayer.Character:MoveTo(player.Character.HumanoidRootPart.Position)
+                    murdererFound = true
+                    break  -- Stop the loop once the Murderer is found
+                end
+            end
+        end
+        
+        if not murdererFound then
+            print("No Murderer found (no Knife).")
+        end
+    end,
+})
