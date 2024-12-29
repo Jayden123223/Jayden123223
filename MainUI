@@ -1,8 +1,18 @@
+--[[
+
+Rayfield Interface Suite
+by Sirius
+
+shlex | Designing + Programming
+iRay  | Programming
+Max   | Programming
+
+]]
 
 
 
 local InterfaceBuild = '1VEX'
-
+--local Release = "Build 1.55"
 local RayfieldFolder = "Rayfield"
 local ConfigurationFolder = RayfieldFolder.."/Configurations"
 local ConfigurationExtension = ".rfld"
@@ -28,8 +38,8 @@ if request then
         Body = HttpService:JSONEncode({
             Executor = getExecutor(),
             Script = {
-            --    Interface = InterfaceBuild,
-        
+                Interface = InterfaceBuild,
+            --    Release = Release
             }
         })
     })
@@ -517,7 +527,7 @@ local dragOffset = 255
 local dragOffsetMobile = 150
 
 Rayfield.DisplayOrder = 100
-LoadingFrame.Version.Text = Release
+--LoadingFrame.Version.Text = Release
 
 
 local Icons = useStudio and require(script.Parent.icons) or loadstring(game:HttpGet('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/refs/heads/main/icons.lua'))()
