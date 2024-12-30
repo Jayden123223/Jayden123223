@@ -9,13 +9,13 @@ local Window = Rayfield:CreateWindow({
         FolderName = nil, -- Optional: Specify a folder name for saved settings
         FileName = "Big Hub" -- The name of the file to save configuration settings
     },
-    KeySystem = true, -- Disable the key system
+    KeySystem = false, -- Disable the key system
     KeySettings = {
         Title = "Murder Mystery 2 | Key",
         Subtitle = "On my Roblox Profile",
         FileName = "Key",
         SaveKey = false,
-        GrabKeyFromSite = true,
+        GrabKeyFromSite = false,
         Key = "Test"
     }
 })
@@ -619,6 +619,141 @@ SettingTab:CreateSlider({
         local lighting = game.Lighting
         lighting.Brightness = Value -- Adjust the Brightness based on the slider value
         print("Brightness set to: " .. Value) -- Optional feedback
+    end,
+})
+
+
+
+local SettingSection = MainTab:CreateSection("Soon to come, (Working)")
+MainTab:CreateInput({
+    Name = "Teleport To User (Working)",  -- Name of the input field
+    PlaceholderText = "Enter username",  -- Placeholder text for the input
+    RemoveTextAfterFocusLost = true,  -- Option to remove text after losing focus
+    Callback = function(Text)
+        local username = Text  -- Get the typed username
+        local player = game.Players:FindFirstChild(username)  -- Find the player by username
+        
+        if player then
+            local character = player.Character
+            if character then
+                -- Teleport the local player to the other player's character
+                game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(character.PrimaryPart.CFrame)
+                print("Teleported to:", username)
+            else
+                print("The player does not have a character.")
+            end
+        else
+            print("Player not found. Please enter a valid username.")
+        end
+    end
+})
+
+local SettingSection = MainTab:CreateSection("Coming Soon!")
+
+MainTab:CreateInput({
+    Name = "Fling User (Half Working)",  -- Name of the input field
+    PlaceholderText = "Enter username",  -- Placeholder text for the input
+    RemoveTextAfterFocusLost = true,  -- Option to remove text after losing focus
+    Callback = function(Text)
+        local username = Text  -- Get the typed username
+        local player = game.Players:FindFirstChild(username)  -- Find the player by username
+        
+        if player then
+            local character = player.Character
+            if character then
+                -- Find the HumanoidRootPart of the player's character
+                local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+                if humanoidRootPart then
+                    local localPlayer = game.Players.LocalPlayer
+                    local localChar = localPlayer.Character
+                    local localHRP = localChar:WaitForChild("HumanoidRootPart")
+                    
+                    -- Teleport the local player to the target player's HumanoidRootPart
+                    localHRP.CFrame = humanoidRootPart.CFrame
+                    
+                    -- Wait for the teleport to complete (optional)
+                    wait(0.5)
+
+                    -- Create a BodyVelocity to apply a fling force to the target
+                    local bodyVelocity = Instance.new("BodyVelocity")
+                    bodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)  -- Apply strong force in all directions
+                    bodyVelocity.Velocity = humanoidRootPart.CFrame.LookVector * 500  -- Apply force in the direction the player is facing
+                    bodyVelocity.Parent = humanoidRootPart  -- Attach the BodyVelocity to the HumanoidRootPart
+                    
+                    -- Optionally use a BodyGyro to stabilize the character while being flung
+                    local bodyGyro = Instance.new("BodyGyro")
+                    bodyGyro.CFrame = humanoidRootPart.CFrame
+                    bodyGyro.MaxTorque = Vector3.new(400000, 400000, 400000)  -- High torque to stabilize
+                    bodyGyro.Parent = humanoidRootPart
+
+                    -- Remove the BodyVelocity and BodyGyro after a brief moment to stop the fling effect
+                    game.Debris:AddItem(bodyVelocity, 0.1)
+                    game.Debris:AddItem(bodyGyro, 0.1)
+
+                    print("Teleported to and flung", username)
+                else
+                    print("HumanoidRootPart not found in character.")
+                end
+            else
+                print("The player does not have a character.")
+            end
+        else
+            print("Player not found. Please enter a valid username.")
+        end
+    end
+})
+MainTab:CreateButton({
+    Name = "Teleport to Gun (Coming Soon!)",  -- Name of the button
+    Flag = "TeleportToGunButton",  -- Unique flag for saving/loading the state
+    Callback = function()
+        -- Find the MM2 gun in the game world (assuming it's named "Gun")
+        local gun = nil
+        for _, item in pairs(game.Workspace:GetChildren()) do
+            if item.Name == "Gun" and item:IsA("Tool") then
+                gun = item
+                break
+            end
+        end
+        
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+        
+        -- Check if the gun exists
+        if gun then
+            -- Save the player's current position
+            local originalPosition = humanoidRootPart.CFrame
+            
+            -- Teleport the player to the gun's position
+            humanoidRootPart.CFrame = gun.CFrame
+            
+            -- Simulate the player picking up the gun
+            -- Here we simulate the pickup by parent the gun to the player
+            gun.Parent = player.Backpack  -- Assuming gun should go into player's Backpack
+            gun.Anchored = false  -- Ensure the gun is not anchored anymore
+            gun.CanCollide = false  -- Disable collision after pickup
+            
+            -- Wait for a short moment to simulate the pickup action
+            wait(1)
+            
+            -- Return the player to the original position
+            humanoidRootPart.CFrame = originalPosition
+            
+            print("Teleported to the gun, picked it up, and returned to original position.")
+        else
+            print("Gun not found.")
+        end
+    end
+})
+
+
+
+
+MainTab:CreateButton({
+    Name = "Gun ESP (Coming Soon!)",  -- Name of the button
+    Flag = "TeleportToMurderButton2",  -- Unique flag for saving/loading the state
+    Callback = function()
+    
     end,
 })
 
