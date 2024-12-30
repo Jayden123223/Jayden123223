@@ -9,7 +9,7 @@ local Window = Rayfield:CreateWindow({
         FolderName = nil, -- Optional: Specify a folder name for saved settings
         FileName = "Big Hub" -- The name of the file to save configuration settings
     },
-    KeySystem = true, -- Disable the key system
+    KeySystem = false, -- Disable the key system
     KeySettings = {
         Title = "Murder Mystery 2 | Key",
         Subtitle = "On my Roblox Profile",
@@ -25,13 +25,40 @@ local MainTab = Window:CreateTab("Home", nil) -- Title, Image (set to nil for no
 local ESPTab = Window:CreateTab("ESP", nil) -- New tab for ESP features
 local PlayerTab = Window:CreateTab("Player", nil) -- New tab for Player features
 local TeleportTab = Window:CreateTab("Teleport",nil) -- New tab for Teleport features
+local SettingTab = Window:CreateTab("Settings",nil) -- New tab for Teleport features
+local LobbyTab = Window:CreateTab("Lobby",nil) -- New tab for Teleport features
 
 -- Adding sections to tabs
 local MainSection = MainTab:CreateSection("Main")
 local ESPSection = ESPTab:CreateSection("ESP Features - Turn On/Off Every Round!")
-local PlayerSection = PlayerTab:CreateSection("Player Features ")
 local TeleportSection = TeleportTab:CreateSection("Teleport Features ")
+local PlayerSection = PlayerTab:CreateSection("Player Features ")
+local SettingSection = SettingTab:CreateSection("Random Features")
 
+
+local originalFOV = workspace.CurrentCamera.FieldOfView  -- Store the original FOV
+local fovon = false  -- Track FOV state
+
+-- Function to toggle FOV
+local function toggleFOV(state)
+    fovon = state  -- Set the FOV state based on the toggle
+    print(fovon and "FOV Enabled!" or "FOV Disabled!")
+end
+
+
+-- Keep updating the FOV while the toggle is enabled
+game:GetService("RunService").Heartbeat:Connect(function()
+    workspace.CurrentCamera.FieldOfView = fovon and 100 or 70
+end)
+
+
+-- Create the FOV toggle button using Rayfield
+PlayerTab:CreateToggle({
+    Name = "FOV",  -- Name of the toggle
+    CurrentValue = fovon,  -- Default value (whether FOV is on or off)
+    Flag = "EnableFOV",  -- Flag for saving the toggle state
+    Callback = toggleFOV  -- Callback to the toggleFOV function
+})
 -- Murderer ESP TAB
 local MurdererESPToggle = ESPTab:CreateToggle({
     Name = "Murderer ESP", -- Name of the toggle
@@ -122,62 +149,147 @@ local InnocentESPToggle = ESPTab:CreateToggle({
     end
 })
 
+
+
 -- PLAYER TAB
-PlayerTab:CreateSlider({
-    Name = "Walkspeed Slider",  -- The name of the slider
-    Range = {0, 25},           -- The min and max values (0 to 300)
-    Increment = 1,              -- The step size when adjusting the slider
-    Suffix = "Speed",           -- Suffix to display after the value (e.g., "Speed")
-    CurrentValue = 16,         -- The initial value of the slider (161 in this case)
-    Flag = "Slider1",           -- A unique flag identifier for this setting (important for saving/loading config)
-    
-    -- Callback function that gets called whenever the slider value changes
-    Callback = function(Value)
-        -- Set the player's WalkSpeed to the new value from the slider
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
-        print("WalkSpeed set to: " .. Value)  -- Optional: prints the new WalkSpeed for feedback
+local Input
+
+PlayerTab:CreateInput({
+    Name = "Jump Power", -- Name of the input field
+    PlaceholderText = "50-200", -- Placeholder text displayed in the input field
+    RemoveTextAfterFocusLost = true, -- Option to remove text after losing focus
+    Callback = function(Text)
+        local JumpPower = tonumber(Text) -- Convert the input text to a number
+        if JumpPower and JumpPower >= 50 and JumpPower <= 200 then
+            game.Players.LocalPlayer.Character.Humanoid.JumpPower = JumpPower
+            print("Jump Power set to:", JumpPower)
+        else
+            print("Invalid input. Please enter a number between 50 and 200.")
+        end
+    end
+})
+
+PlayerTab:CreateInput({
+    Name = "Walk Speed", -- Name of the input field
+    PlaceholderText = "15-25", -- Placeholder text displayed in the input field
+    RemoveTextAfterFocusLost = true, -- Option to remove text after losing focus
+    Callback = function(Text)
+        local WalkSpeed = tonumber(Text) -- Convert the input text to a number
+        if WalkSpeed and WalkSpeed >= 16 and WalkSpeed <= 25 then
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = WalkSpeed
+            print("Walk Speed set to:", WalkSpeed)
+        else
+            print("Invalid input. Please enter a number between 15 and 25.")
+        end
+    end
+})
+
+PlayerTab:CreateButton({
+    Name = "Reset to Default", -- Name of the button
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        if player and player.Character and player.Character:FindFirstChild("Humanoid") then
+            local humanoid = player.Character.Humanoid
+            humanoid.WalkSpeed = 16 -- Default WalkSpeed
+            humanoid.JumpPower = 50 -- Default JumpPower
+            print("WalkSpeed and JumpPower reset to default values.")
+        else
+            print("Failed to find the Humanoid object.")
+        end
+    end
+})
+
+
+
+
+
+
+
+
+local testSection = PlayerTab:CreateSection("Player Killing")
+
+PlayerTab:CreateButton({
+    Name = "Kill All (Murderer)",  -- Name of the button
+    Flag = "KillAllButton",  -- Unique flag for saving/loading the state
+    Callback = function()
+        -- Check if the player has a "Knife" in their backpack or character
+        if game.Players.LocalPlayer.Backpack:FindFirstChild("Knife") ~= nil or game.Workspace[game.Players.LocalPlayer.Name]:FindFirstChild("Knife") ~= nil then
+            local players = game:GetService("Players")
+            -- Loop through all players in the game
+            for _, player in pairs(players:GetPlayers()) do
+                -- Skip the current player (do not kill yourself)
+                if player.Name ~= game.Players.LocalPlayer.Name then
+                    repeat
+                        wait() -- Wait until the player dies
+                        -- Teleport the local player's character to the target player's character's HumanoidRootPart
+                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, 1)
+                    until player.Character.Humanoid.Health == 0 -- Exit the loop when the player dies
+                end
+            end
+        else
+            print("[ERROR] You are not a murderer!!!") -- Display an error if the player doesn't have the Knife
+        end
     end,
 })
 
-PlayerTab:CreateSlider({
-    Name = "Jump Height Slider                        (NOT WORKING)",  -- The name of the slider
-    Range = {0, 25},              -- The min and max values (0 to 25)
-    Increment = 1,                -- The step size when adjusting the slider
-    Suffix = "Jump",              -- Suffix to display after the value (e.g., "Jump")
-    CurrentValue = 25,            -- The initial value of the slider (16 in this case)
-    Flag = "Slider2",             -- A unique flag identifier for this setting
-    
-    -- Callback function that gets called whenever the slider value changes
-    Callback = function(Value)
-        -- Set the player's JumpHeight to the new value from the slider
-        game.Players.LocalPlayer.Character.Humanoid.JumpHeight = Value
-        print("JumpHeight set to: " .. Value)  -- Optional: prints the new JumpHeight for feedback
+
+-- Create B-Tools Button
+MainTab:CreateButton({
+    Name = "B-Tools",  -- Name of the button
+    Flag = "TeleportToMurderButton",  -- Unique flag for saving/loading the state
+    Callback = function()
+        loadstring(game:HttpGet("https://pastebin.com/raw/JpEmyNa0"))()  
     end,
 })
 
+
+--[[
 -- TELEPORT TAB
 local Dropdown = TeleportTab:CreateDropdown({
-    Name = "Select Area                                                           (NOT WORKING)",  -- Name of the dropdown
+    Name = "Select Area",  -- Name of the dropdown
     Options = {"Spawn", "Map"},  -- Options in the dropdown
-    CurrentOption = "Spawn",  -- Default selected option (fixed from 'Starter Island')
-    MultipleOptions = false,  -- Set to false if only one option can be selected at a time
-    Flag = "Dropdown1",  -- A unique flag for saving/loading config
+    CurrentOption = "Spawn",  -- Default selected option
+    MultipleOptions = false,  -- Only one option can be selected at a time
+    Flag = "Dropdown1",  -- Unique flag for saving/loading config
     
     -- Callback function that is triggered when the selected option changes
     Callback = function(Option)
         -- Option is a string that contains the selected option
         print("Selected Area: " .. Option)
+        
         if Option == "Spawn" then
-            -- Add code here to teleport to the spawn area
-            print("Teleporting to Spawn...")
-            -- Example: game.Players.LocalPlayer.Character:MoveTo(workspace.Spawn)
+            -- Ensure the character is loaded before teleporting
+            local character = game.Players.LocalPlayer.Character
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                -- Teleport to the spawn location
+                character.HumanoidRootPart.CFrame = CFrame.new(-185, 137, 19)
+            else
+                -- Wait for the character to be fully loaded if it's not yet available
+                game.Players.LocalPlayer.CharacterAdded:Wait()
+                local newCharacter = game.Players.LocalPlayer.Character
+                newCharacter.HumanoidRootPart.CFrame = CFrame.new(-185, 137, 19)
+            end
         elseif Option == "Map" then
-            -- Add code here to teleport to the map area
             print("Teleporting to Map...")
-            -- Example: game.Players.LocalPlayer.Character:MoveTo(workspace.Map)
+            
+            -- Check if the Map location exists in workspace
+            local mapLocation = workspace:FindFirstChild("Map")
+            if mapLocation then
+                -- Make sure the player is fully loaded and the character exists before moving
+                local character = game.Players.LocalPlayer.Character
+                if character and character:FindFirstChild("HumanoidRootPart") then
+                    -- Move the character to the map location
+                    character.HumanoidRootPart.CFrame = mapLocation.CFrame
+                else
+                    warn("Character or HumanoidRootPart not found!")
+                end
+            else
+                warn("Map not found!")
+            end
         end
     end,
 })
+]]
 
 -- Creating a button for teleporting to "Murder" area in MM2
 local Button = TeleportTab:CreateButton({
@@ -209,8 +321,9 @@ local Button = TeleportTab:CreateButton({
     end,
 })
 
+--[[
 local Button = TeleportTab:CreateButton({
-    Name = "Teleport to MM2 Gun",  -- Name of the button
+    Name = "Teleport to MM2 Gun                                                     (NOT WORKING)",  -- Name of the button
     Flag = "TeleportToMM2GunButton",  -- Unique flag for saving/loading the state
     
     -- Callback function that is triggered when the button is clicked
@@ -241,3 +354,271 @@ local Button = TeleportTab:CreateButton({
         end
     end,
 })
+
+]]
+
+-- MAAIN CHARACTER TELEPORTS
+local MainSection = TeleportTab:CreateSection("Player Teleports")
+-- Tleport
+TeleportTab:CreateButton({
+    Name = "Teleports player 10 studs forward",  -- Name of the button
+    Flag = "TeleportToMurderButton2",  -- Unique flag for saving/loading the state
+    Callback = function()
+        game.Players.LocalPlayer.Character.PrimaryPart.CFrame = game.Players.LocalPlayer.Character.PrimaryPart.CFrame * CFrame.new(0, 0, -10)
+    end,
+})
+TeleportTab:CreateButton({
+    Name = "Teleports player 10 studs up",  -- Name of the button
+    Flag = "TeleportToMurderButton2",  -- Unique flag for saving/loading the state
+    Callback = function()
+        game.Players.LocalPlayer.Character.PrimaryPart.CFrame = game.Players.LocalPlayer.Character.PrimaryPart.CFrame * CFrame.new(0, 10, 0)
+    end,
+})
+TeleportTab:CreateButton({
+    Name = "Teleports player 10 studs down",  -- Name of the button
+    Flag = "TeleportToMurderButton2",  -- Unique flag for saving/loading the state
+    Callback = function()
+        game.Players.LocalPlayer.Character.PrimaryPart.CFrame = game.Players.LocalPlayer.Character.PrimaryPart.CFrame * CFrame.new(0, -10, 0)
+    end,
+})
+
+TeleportTab:CreateButton({
+    Name = "Coordinates Grabber", "Execute Coordinates Grabber Gui",  -- Name of the button
+    Flag = "TeleportToMurderButton2",  -- Unique flag for saving/loading the state
+    Callback = function()
+        loadstring(game:HttpGet("https://pastebin.com/raw/M4TtucPi", true))()
+    end,
+})
+
+
+local MainSection = TeleportTab:CreateSection("Dark Dex")
+
+TeleportTab:CreateButton({
+    Name = "Dark Dex",  -- Name of the button
+    Flag = "TeleportToMurderButton2",  -- Unique flag for saving/loading the state
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/MariyaFurmanova/Library/main/dex2.0", true))()
+    end,
+})
+
+
+
+--[[
+MainTab:CreateButton({
+    Name = "Testing1",  -- Name of the button
+    Flag = "TeleportToMurderButton2",  -- Unique flag for saving/loading the state
+    Callback = function()
+
+    end,
+})
+
+]]
+
+
+
+
+
+-- LOBBY TAB
+
+local LobbySection = LobbyTab:CreateSection("Vote For Maps (Resets 3 times)")
+LobbyTab:CreateButton({
+    Name = "Teleport to Pad 1",  -- Name of the button
+    Flag = "TeleportToMurderButton3",  -- Unique flag for saving/loading the state
+    Callback = function()
+        local part = game.Workspace.Lobby.MapVote.VotePad1:FindFirstChild("Pad")  -- Find pad in the Workspace
+        if part then
+            local teleportCount = 0  -- Initialize the teleport counter
+            local player = game.Players.LocalPlayer
+
+            -- Function to handle the teleport, reset, and repeat logic
+            local function teleportAndReset()
+                -- Check if teleportCount is less than 3 to continue teleporting
+                if teleportCount < 2 then
+                    teleportCount = teleportCount + 1  -- Increment the teleport counter
+                    local character = player.Character or player.CharacterAdded:Wait()  -- Ensure character is loaded
+
+                    -- Teleport the player to the specified part
+                    character:SetPrimaryPartCFrame(part.CFrame)  -- Teleport to the pad's CFrame
+                    print("Teleported to pad - Attempt " .. teleportCount)
+
+                    -- Wait for 2 seconds before resetting and teleporting again
+                    wait(2)
+
+                    -- Set the player's health to 0 to trigger respawn (forcefully kill character)
+                    local humanoid = character:FindFirstChild("Humanoid")
+                    if humanoid then
+                        humanoid.Health = 0  -- Set health to 0 to cause the character to die
+                    end
+
+                    -- Wait for the character to respawn and then reset position
+                    player.CharacterAdded:Wait()  -- Wait for the respawn
+                    print("Character respawned")
+
+                    -- After respawn, call the teleport function again after an additional delay
+                    wait(2)  -- Add an additional delay before the next teleport
+                    teleportAndReset()  -- Recursive call for the next teleport
+                else
+                    print("Teleporting stopped after 3 attempts.")
+                end
+            end
+
+            -- Start the teleporting process
+            teleportAndReset()
+
+        else
+            print("Pad not found in the Workspace")  -- Error handling if pad is missing
+        end
+    end,
+})
+
+LobbyTab:CreateButton({
+    Name = "Teleport to Pad 2",  -- Name of the button
+    Flag = "TeleportToMurderButton3",  -- Unique flag for saving/loading the state
+    Callback = function()
+        local part = game.Workspace.Lobby.MapVote.VotePad2:FindFirstChild("Pad")  -- Find pad in the Workspace
+        if part then
+            local teleportCount = 0  -- Initialize the teleport counter
+            local player = game.Players.LocalPlayer
+
+            -- Function to handle the teleport, reset, and repeat logic
+            local function teleportAndReset()
+                -- Check if teleportCount is less than 3 to continue teleporting
+                if teleportCount < 2 then
+                    teleportCount = teleportCount + 1  -- Increment the teleport counter
+                    local character = player.Character or player.CharacterAdded:Wait()  -- Ensure character is loaded
+
+                    -- Teleport the player to the specified part
+                    character:SetPrimaryPartCFrame(part.CFrame)  -- Teleport to the pad's CFrame
+                    print("Teleported to pad - Attempt " .. teleportCount)
+
+                    -- Wait for 2 seconds before resetting and teleporting again
+                    wait(2)
+
+                    -- Set the player's health to 0 to trigger respawn (forcefully kill character)
+                    local humanoid = character:FindFirstChild("Humanoid")
+                    if humanoid then
+                        humanoid.Health = 0  -- Set health to 0 to cause the character to die
+                    end
+
+                    -- Wait for the character to respawn and then reset position
+                    player.CharacterAdded:Wait()  -- Wait for the respawn
+                    print("Character respawned")
+
+                    -- After respawn, call the teleport function again after an additional delay
+                    wait(2)  -- Add an additional delay before the next teleport
+                    teleportAndReset()  -- Recursive call for the next teleport
+                else
+                    print("Teleporting stopped after 3 attempts.")
+                end
+            end
+
+            -- Start the teleporting process
+            teleportAndReset()
+
+        else
+            print("Pad not found in the Workspace")  -- Error handling if pad is missing
+        end
+    end,
+})
+
+LobbyTab:CreateButton({
+    Name = "Teleport to Pad 3",  -- Name of the button
+    Flag = "TeleportToMurderButton3",  -- Unique flag for saving/loading the state
+    Callback = function()
+        local part = game.Workspace.Lobby.MapVote.VotePad3:FindFirstChild("Pad")  -- Find pad in the Workspace
+        if part then
+            local teleportCount = 0  -- Initialize the teleport counter
+            local player = game.Players.LocalPlayer
+
+            -- Function to handle the teleport, reset, and repeat logic
+            local function teleportAndReset()
+                -- Check if teleportCount is less than 3 to continue teleporting
+                if teleportCount < 2 then
+                    teleportCount = teleportCount + 1  -- Increment the teleport counter
+                    local character = player.Character or player.CharacterAdded:Wait()  -- Ensure character is loaded
+
+                    -- Teleport the player to the specified part
+                    character:SetPrimaryPartCFrame(part.CFrame)  -- Teleport to the pad's CFrame
+                    print("Teleported to pad - Attempt " .. teleportCount)
+
+                    -- Wait for 2 seconds before resetting and teleporting again
+                    wait(2)
+
+                    -- Set the player's health to 0 to trigger respawn (forcefully kill character)
+                    local humanoid = character:FindFirstChild("Humanoid")
+                    if humanoid then
+                        humanoid.Health = 0  -- Set health to 0 to cause the character to die
+                    end
+
+                    -- Wait for the character to respawn and then reset position
+                    player.CharacterAdded:Wait()  -- Wait for the respawn
+                    print("Character respawned")
+
+                    -- After respawn, call the teleport function again after an additional delay
+                    wait(2)  -- Add an additional delay before the next teleport
+                    teleportAndReset()  -- Recursive call for the next teleport
+                else
+                    print("Teleporting stopped after 3 attempts.")
+                end
+            end
+
+            -- Start the teleporting process
+            teleportAndReset()
+
+        else
+            print("Pad not found in the Workspace")  -- Error handling if pad is missing
+        end
+    end,
+})
+
+
+--- SETTGINS TAB
+SettingTab:CreateSlider({
+    Name = "Fog Distance Slider", -- The name of the slider
+    Range = {100, 1000},         -- The min and max values for fog distance
+    Increment = 10,              -- The step size when adjusting the slider
+    Suffix = " studs",           -- Suffix to display after the value (e.g., "studs")
+    CurrentValue = 750,          -- The initial value of the slider
+    Flag = "FogSlider",          -- A unique flag identifier for this slider
+    
+    -- Callback function that gets called whenever the slider value changes
+    Callback = function(Value)
+        local lighting = game.Lighting
+        lighting.FogEnd = Value -- Adjust the FogEnd property based on the slider value
+        print("FogEnd set to: " .. Value .. " studs") -- Optional feedback
+    end,
+})
+
+SettingTab:CreateSlider({
+    Name = "Clock Time Slider", -- The name of the slider
+    Range = {0, 24},            -- The min and max values for the clock (0-24 hours)
+    Increment = 1,              -- The step size when adjusting the slider
+    Suffix = " Hours",          -- Suffix to display after the value (e.g., " Hours")
+    CurrentValue = 12,          -- The initial value of the slider (e.g., 12:00 noon)
+    Flag = "ClockTimeSlider",   -- A unique flag identifier for this slider
+    
+    -- Callback function that gets called whenever the slider value changes
+    Callback = function(Value)
+        local lighting = game.Lighting
+        lighting.ClockTime = Value -- Adjust the ClockTime based on the slider value
+        print("ClockTime set to: " .. Value .. " hours") -- Optional feedback
+    end,
+})
+
+-- Slider for adjusting Brightness
+SettingTab:CreateSlider({
+    Name = "Brightness Slider", -- The name of the slider
+    Range = {0, 10},            -- The min and max values for brightness
+    Increment = 0.1,            -- The step size when adjusting the slider
+    Suffix = "",                -- No suffix needed for brightness
+    CurrentValue = 2,           -- The initial value of the slider (default brightness)
+    Flag = "BrightnessSlider",  -- A unique flag identifier for this slider
+    
+    -- Callback function that gets called whenever the slider value changes
+    Callback = function(Value)
+        local lighting = game.Lighting
+        lighting.Brightness = Value -- Adjust the Brightness based on the slider value
+        print("Brightness set to: " .. Value) -- Optional feedback
+    end,
+})
+
