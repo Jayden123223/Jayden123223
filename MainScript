@@ -14,8 +14,8 @@ local Window = Rayfield:CreateWindow({
         Title = "Murder Mystery 2 | Key",
         Subtitle = "On my Roblox Profile",
         FileName = "Key",
-        SaveKey = false,
-        GrabKeyFromSite = true,
+        SaveKey = ,
+        GrabKeyFromSite = false,
         Key = "Test"
     }
 })
