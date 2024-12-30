@@ -9,7 +9,7 @@ local Window = Rayfield:CreateWindow({
         FolderName = nil, -- Optional: Specify a folder name for saved settings
         FileName = "Big Hub" -- The name of the file to save configuration settings
     },
-    KeySystem = false, -- Disable the key system
+    KeySystem = true, -- Disable the key system
     KeySettings = {
         Title = "Murder Mystery 2 | Key",
         Subtitle = "On my Roblox Profile",
