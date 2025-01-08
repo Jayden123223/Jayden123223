@@ -1,0 +1,164 @@
+-- Coordinates Grabber GUI
+
+-- Create GUI Elements
+local coordGui = Instance.new("ScreenGui")
+local mainFrame = Instance.new("Frame")
+local titleLabel = Instance.new("TextLabel")
+local cordsLabel = Instance.new("TextLabel")
+local grabButton = Instance.new("TextButton")
+local copyButton = Instance.new("TextButton")
+local teleportButton = Instance.new("TextButton")
+local closeButton = Instance.new("TextButton")
+
+-- Add UICorner Utility
+local function addUICorner(parent, cornerRadius)
+    local uicorner = Instance.new("UICorner")
+    uicorner.CornerRadius = UDim.new(cornerRadius or 0.15, 0)
+    uicorner.Parent = parent
+end
+
+-- ScreenGui Properties
+coordGui.Name = "CoordGui"
+coordGui.Parent = game:GetService("CoreGui")
+
+-- Main Frame
+mainFrame.Name = "MainFrame"
+mainFrame.Parent = coordGui
+mainFrame.BackgroundTransparency = 0.1
+mainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+mainFrame.Size = UDim2.new(0, 213,0, 190)
+mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.Active = true
+mainFrame.Draggable = true
+addUICorner(mainFrame, 0.2)
+
+-- Add UIScale for scaling support
+local uiScale = Instance.new("UIScale")
+uiScale.Parent = mainFrame
+
+-- Add a resize handle
+local resizeHandle = Instance.new("Frame")
+resizeHandle.Name = "ResizeHandle"
+resizeHandle.Parent = mainFrame
+resizeHandle.Size = UDim2.new(0, 20, 0, 20)
+resizeHandle.Position = UDim2.new(1, -20, 1, -20)
+resizeHandle.AnchorPoint = Vector2.new(1, 1)
+resizeHandle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+resizeHandle.BorderSizePixel = 0
+addUICorner(resizeHandle, 0.5)
+
+-- Resize logic
+local resizing = false
+local startSize
+local startPosition
+
+resizeHandle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        resizing = true
+        startSize = mainFrame.Size
+        startPosition = input.Position
+    end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if resizing and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - startPosition
+        mainFrame.Size = UDim2.new(startSize.X.Scale, startSize.X.Offset + delta.X, startSize.Y.Scale, startSize.Y.Offset + delta.Y)
+    end
+end)
+
+game:GetService("UserInputService").InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        resizing = false
+    end
+end)
+
+-- Title Label
+titleLabel.Name = "TitleLabel"
+titleLabel.Parent = mainFrame
+titleLabel.BackgroundTransparency = 1
+titleLabel.Size = UDim2.new(1, 0, 0, 40)
+titleLabel.Font = Enum.Font.SciFi
+titleLabel.Text = "Coordinates Grabber"
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.TextSize = 18
+titleLabel.TextWrapped = true
+
+-- Coordinates Display
+cordsLabel.Name = "CordsLabel"
+cordsLabel.Parent = mainFrame
+cordsLabel.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+cordsLabel.Position = UDim2.new(0.05, 0, 0.2, 0)
+cordsLabel.Size = UDim2.new(0.9, 0, 0.2, 0)
+cordsLabel.Font = Enum.Font.SciFi
+cordsLabel.Text = " "
+cordsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+cordsLabel.TextSize = 14
+cordsLabel.TextWrapped = true
+addUICorner(cordsLabel, 0.15)
+
+-- Buttons Configuration
+local buttons = {
+    {Name = "GrabButton", Text = "Grab", Color = Color3.fromRGB(70, 130, 180), Position = UDim2.new(0.05, 0, 0.5, 0)},
+    {Name = "CopyButton", Text = "Copy", Color = Color3.fromRGB(60, 179, 113), Position = UDim2.new(0.5, 0, 0.5, 0)},
+    {Name = "TeleportButton", Text = "Teleport", Color = Color3.fromRGB(255, 165, 0), Position = UDim2.new(0.05, 0, 0.7, 0)},
+    {Name = "CloseButton", Text = "Close", Color = Color3.fromRGB(220, 20, 60), Position = UDim2.new(0.5, 0, 0.7, 0)},
+}
+
+for _, btnConfig in ipairs(buttons) do
+    local button = Instance.new("TextButton")
+    button.Name = btnConfig.Name
+    button.Parent = mainFrame
+    button.BackgroundColor3 = btnConfig.Color
+    button.Position = btnConfig.Position
+    button.Size = UDim2.new(0.4, 0, 0.15, 0)
+    button.Font = Enum.Font.SciFi
+    button.Text = btnConfig.Text
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextSize = 14
+    addUICorner(button, 0.15)
+
+    -- Attach buttons dynamically
+    if btnConfig.Name == "GrabButton" then grabButton = button end
+    if btnConfig.Name == "CopyButton" then copyButton = button end
+    if btnConfig.Name == "TeleportButton" then teleportButton = button end
+    if btnConfig.Name == "CloseButton" then closeButton = button end
+end
+
+-- Button Functionality
+grabButton.MouseButton1Click:Connect(function()
+    local position = game.Players.LocalPlayer.Character.HumanoidRootPart.Position
+    local x, y, z = math.floor(position.X), math.floor(position.Y), math.floor(position.Z)
+    cordsLabel.Text = string.format("%d, %d, %d", x, y, z)
+    print("Coordinates Grabbed: " .. cordsLabel.Text)
+end)
+
+copyButton.MouseButton1Click:Connect(function()
+    if setclipboard then
+        setclipboard(cordsLabel.Text)
+        print("Coordinates Copied: " .. cordsLabel.Text)
+    else
+        warn("Clipboard functionality not available.")
+    end
+end)
+
+teleportButton.MouseButton1Click:Connect(function()
+    local coords = cordsLabel.Text:split(", ")
+    if #coords == 3 then
+        local x, y, z = tonumber(coords[1]), tonumber(coords[2]), tonumber(coords[3])
+        if x and y and z then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(x, y, z)
+            print("Teleported to: " .. cordsLabel.Text)
+        else
+            warn("Invalid coordinates!")
+        end
+    else
+        warn("Incomplete coordinates!")
+    end
+end)
+
+closeButton.MouseButton1Click:Connect(function()
+    coordGui:Destroy()
+    print("GUI Closed.")
+end)
