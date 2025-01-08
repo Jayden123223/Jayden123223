@@ -1,0 +1,49 @@
+-- Teleport Buttons
+
+TeleportTab:CreateButton({
+    Name = "Teleport player 10 studs forward",
+    Flag = "TeleportForward",
+    Callback = function()
+        game.Players.LocalPlayer.Character.PrimaryPart.CFrame = game.Players.LocalPlayer.Character.PrimaryPart.CFrame * CFrame.new(0, 0, -10)
+    end,
+})
+
+TeleportTab:CreateButton({
+    Name = "Teleport player 10 studs up",
+    Flag = "TeleportUp",
+    Callback = function()
+        game.Players.LocalPlayer.Character.PrimaryPart.CFrame = game.Players.LocalPlayer.Character.PrimaryPart.CFrame * CFrame.new(0, 10, 0)
+    end,
+})
+
+TeleportTab:CreateButton({
+    Name = "Teleport player 10 studs down",
+    Flag = "TeleportDown",
+    Callback = function()
+        game.Players.LocalPlayer.Character.PrimaryPart.CFrame = game.Players.LocalPlayer.Character.PrimaryPart.CFrame * CFrame.new(0, -10, 0)
+    end,
+})
+
+TeleportTab:CreateButton({
+    Name = "Coordinates Grabber",
+    Flag = "GrabCoordinates",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Jayden123223/Jayden123223/refs/heads/main/Grab%20Coordiantes", true))()
+    end,
+})
+
+-- Teleport to Player by Username
+TeleportTab:CreateInput({
+    Name = "Teleport To User",
+    PlaceholderText = "Enter UserName",
+    RemoveTextAfterFocusLost = true,
+    Callback = function(Text)
+        local player = game.Players:FindFirstChild(Text)
+        if player and player.Character then
+            game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(player.Character.PrimaryPart.CFrame)
+            print("Teleported to:", Text)
+        else
+            print("Player not found or character not available.")
+        end
+    end
+})
